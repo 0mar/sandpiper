@@ -9,7 +9,7 @@
 %\graphicspath{{./images/}}
 \usepackage[english]{babel}
 \usepackage{authblk}
-\newcommand{\eps}{\varepsilon}
+\renewcommand{\epsilon}{\varepsilon}
 \newcommand{\bigo}[1]{\mathcal{O}\left(#1\right)}
 \newcommand{\note}[1]{\emph{\color{blue}#1}.\\}
 \renewcommand{\L}{\mathcal{ L}}
@@ -27,11 +27,33 @@
 \section{Project aim}
 \label{sec:project_aim}
 
+In this project, we want to compute effective parameters of a composite material numerically using a finite element simulation implemented in FeNiCS.
+Our goal is to explore the relations between the finite element mesh size and the variation in material data.
+We consider the Poisson equation with a rapid variation in the diffusion coefficient and explore different solution techniques, paying [mainly] attention to convergence rates and stability.
+
 \section{Model}
 \label{sec:model}
+We consider a diffusion problem in a composite material. We denote the (periodic) domain with $\Omega \subset \R^d$, for $d\in\{1,2,3\}$. Within this material, we consider unknown quantity $u(x)$, of which the distribution is given by the solution of the Poisson equation:
+\begin{equation}
+    \begin{split}
+        -\nabla \cdot (A_\epsilon(x)\nabla u(x)) &= f(x) \mbox{ for } x \in \Omega\\
+        u(x) &= 0 \mbox{ for } x \in \partial\Omega
+    \end{split}
+    \label{eq:model}
+\end{equation}
+
+Here, $\epsilon$ is a small positive parameter, denoting the rapid variation of the material. 
+For diffusivity $A_\epsilon(x)$, we choose a periodic function with a period of order $\epsilon$, like 
+$$ A_\epsilon(x) = \left( 2+\cos(\frac{2\pi x}{\epsilon} \right)^{-1}.$$
+For $\epsilon \to 0$, it is possible to obtain an homogenized diffusivity, called 'effective diffusion coefficient'.
+If time permits, we will extend the model with a diffusion coefficient also varying in the normal length scale, and finally include time depence in the model as well.
 
 \section{Methodology}
 \label{sec:methodology}
+
+We require some homogenization theory to analyse the effects of rapid variation on the solution of \eqref{eq:model}, and to compute effective diffusion coefficients. 
+In addition, we need numerical linear algebra theory to explore different iterative solver options and apply the ones most efficient to our setting. 
+Also, using results from asymptotic analysis, we are able to check our experimental convergence rates against theoretical upper bounds.
 
 \section{Challenges}
 \label{sec:challenges}
