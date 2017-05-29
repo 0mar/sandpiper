@@ -17,7 +17,7 @@
 \title{Assignment Proposal: Numerical Homogenization}\author[1]{Ivar Stefansson}
 \author[2]{Omar Richardson}
 \affil[1]{Department of Mathematics and Computer Science, Karlstad University}
-\affil[2]{Department of Mathematics, University of Bergen} 
+\affil[2]{Department of Mathematics, University of Bergen}
 
 \begin{document}
 \maketitle
@@ -40,8 +40,8 @@ We consider a diffusion problem in a composite material. We denote the (periodic
     \label{eq:model}
 \end{equation}
 
-Here, $\epsilon$ is a small positive parameter, denoting the rapid variation of the material. 
-For diffusivity $A_\epsilon(x)$, we choose a periodic function with a period of order $\epsilon$, like 
+Here, $\epsilon$ is a small positive parameter, denoting the rapid variation of the material.
+For diffusivity $A_\epsilon(x)$, we choose a periodic function with a period of order $\epsilon$, like
 $$ A_\epsilon(x) = \left( 2+\cos(\frac{2\pi x}{\epsilon}) \right)^{-1}.$$
 For $\epsilon \to 0$, it is possible to obtain an homogenized diffusivity, called 'effective diffusion coefficient'.
 If time permits, we will extend the model with a diffusion coefficient also varying in the normal length scale, and finally include time depence in the model as well.
@@ -49,18 +49,25 @@ If time permits, we will extend the model with a diffusion coefficient also vary
 \section{Methodology}
 \label{sec:methodology}
 
-We require some homogenization theory to analyse the effects of rapid variation on the solution of \eqref{eq:model}, and to compute effective diffusion coefficients. 
-In addition, we need numerical linear algebra theory to explore different iterative solver options and apply the ones most efficient to our setting. 
+We require some homogenization theory to analyze the effects of rapid variation on the solution of \eqref{eq:model}, and to compute effective diffusion coefficients.
+In addition, we need numerical linear algebra theory to explore different iterative solver options and apply the ones most efficient to our setting.
 Also, using results from asymptotic analysis, we are able to check our experimental convergence rates against theoretical upper bounds. Finally, we will of course use FEniCS for the numerical simulations.
 
 \section{Challenges}
 \label{sec:challenges}
-If we venture into the domains of heterogeneous media and time dependence, both the homogenization theory and the numerical implementation become more involved. Hence, it will be natural to try to keep both aspects from growing too complicated, and preferably investigate one at a time keeping other parameters (e.g. domain shape, boundary conditions) fixed and simple.
+The rationale behind homogenization techniques is that it is numerically infeasible to use a mesh small enough to adequately represent the variation present in the data if $\epsilon$ becomes small.
+For this reason, we expect that we will face the same issues when approximating the unhomogenized solution, especially when determining convergence rates; this requires many runs with increasingly smaller $\epsilon$. Luckily, some of these computational difficulties can be circumvented by using appropriate multiprocessing tools in the Linux environment.
 
-The range of available iterative solvers is in general quite wide. Even if we only choose among to those available in FEniCS, we still have to limit ourselves further if meaningful comparisons are to be feasible within the time available time frame. Our approach will be to do some preliminary tests with the available options and then select the two or three most promising solvers.
+Additionally, if we venture into the domains of heterogeneous media and time dependence, both the homogenization theory and the numerical implementation become more involved. Hence, it will be natural to try to keep both aspects from growing too complicated, and preferably investigate one at a time keeping other parameters (e.g. domain shape, boundary conditions) fixed and simple.
+
+Finally, the range of available iterative solvers is in general quite wide. Even if we only choose among to those available in FEniCS, we still have to limit ourselves further if meaningful comparisons are to be feasible within the time available time frame. Our approach will be to do some preliminary tests with the available options and then select the two or three most promising solvers.
 \section{Expected outcome}
 \label{sec:expected_outcome}
-We envision to demonstrate how numerical homogenization may be used to compute homogenized parameters for engineered materials where the microstructure is known. We also want to show how it may be seen as a justification for upscaled models. 
- 
-Some simple approximate relations between mesh size and data variateion scale may be hoped for. For the choice of iterative solvers, we hope to be able to demonstrate literature convergence rates. Possibly, we will see some indications on which solvers are more applicable to this problem type.
+We envision to demonstrate how numerical homogenization may be used to compute homogenized parameters for engineered materials where the microstructure is known. We also want to show how it may be seen as a justification for upscaled models.
+
+To gain a intuition for the model, we want to visualize the solution on a 2D and 3D domain using the Paraview toolkit.
+The plots will help us in understanding the relation between $\epsilon$ and $u_\varepsilon$.
+We also hope to find an approximate relation between mesh sizes of the finite element approximation and the period of variation $\varepsilon$.
+
+For the choice of iterative solvers, we hope to demonstrate literature convergence rates. Possibly, we will see some indications on which solvers are more applicable to this problem type.
 \end{document}
