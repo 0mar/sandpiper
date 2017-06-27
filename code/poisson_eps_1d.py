@@ -7,6 +7,7 @@ Exact solving for fixed eps
 from __future__ import print_function
 import numpy as np
 import fenics as fe
+import matplotlib.pyplot as plt
 
 
 def solve_poisson_eps(h, eps, plot=False):
@@ -54,14 +55,22 @@ def solve_poisson_eps(h, eps, plot=False):
     # vtkfile = fe.File('poisson/solution.pvd')
     # vtkfile << u
 
-
     # Compute error
-    err = fe.errornorm(u_exact, u, 'L2')
-    return err
+    err_norm = fe.errornorm(u_exact, u, 'L2')
+    return err_norm
 
 
 if __name__ == "__main__":
-    h = 1. / 800
-    eps = 1. / 10
-    err = solve_poisson_eps(h, eps, plot=False)
-    print(err)
+    h_list = [1. / 2 ** i for i in range(3, 12)]
+    eps_list = [1. / 2 ** i for i in range(3, 10)]
+    errors = np.zeros((len(h_list), len(eps_list)))
+    for h_step, h in enumerate(h_list):
+        for eps_step, eps in enumerate(eps_list):
+            err = solve_poisson_eps(h, eps, plot=False)
+            errors[h_step, eps_step] = err
+    plt.semilogy(errors)
+    plt.xlabel('h')
+    plt.legend(['eps = %.2e' % eps for eps in eps_list], loc='best')
+    plt.show()
+
+    # Make a plot that shows the order of convergence as a function of eps/h?
