@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 FEniCS code for -div(-A(x/eps)u) = f in 1D
-Exact solving for fixed eps
+Unhomogenized solution approximation for fixed eps > 0
 """
 
 from __future__ import print_function
@@ -48,7 +48,7 @@ def solve_poisson_eps(h, eps, plot=False):
         # Plot solution
         fe.plot(u)
         fe.plot(u_exact, mesh=mesh)
-        # # Hold plot
+        # Hold plot
         fe.interactive()
 
     # # Save solution to file in VTK format
@@ -61,15 +61,24 @@ def solve_poisson_eps(h, eps, plot=False):
 
 
 if __name__ == "__main__":
-    h_list = [1. / 2 ** i for i in range(3, 12)]
-    eps_list = [1. / 2 ** i for i in range(3, 10)]
+    h_list = [1. / 2 ** i for i in range(3, 11)]
+    eps_list = [1. / 2 ** i for i in range(3, 15)]
     errors = np.zeros((len(h_list), len(eps_list)))
     for h_step, h in enumerate(h_list):
         for eps_step, eps in enumerate(eps_list):
             err = solve_poisson_eps(h, eps, plot=False)
             errors[h_step, eps_step] = err
+    conv_rates = errors[:-1, :] / errors[1:, :]
+    # Logplot of errors as function of grid size
     plt.semilogy(errors)
     plt.xlabel('h')
+    plt.legend(['eps = %.2e' % eps for eps in eps_list], loc='best')
+    plt.title("Logplot of errors for different epsilon")
+    # Plot of convergence rates as function of grid size
+    plt.figure()
+    plt.plot(conv_rates)
+    plt.xlabel('h')
+    plt.title("plot of convergence rates for different epsilon")
     plt.legend(['eps = %.2e' % eps for eps in eps_list], loc='best')
     plt.show()
 
