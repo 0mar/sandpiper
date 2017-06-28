@@ -13,6 +13,8 @@
 \newcommand{\note}[1]{\emph{\color{blue}#1}.\\}
 \renewcommand{\L}{\mathcal{ L}}
 \newcommand{\R}{\mathbb{ R}}
+\let\div\relax
+\DeclareMathOperator{\div}{div}
 \title{Numerical Homogenization}\author[1]{Ivar Stefansson} 
 \author[2]{Omar Richardson} 
 \affil[1]{Department of Mathematics and Computer Science, Karlstad University} 
@@ -110,13 +112,13 @@ Now, let $\Omega \subset [0,1]^d$ for $d=2,3$. We extend $A_\epsilon$ to multipl
 Let $i,j=1,\dots,d$. Let $e_i$ be the $i$th basis vector of $\R^d$. To find the effective diffusion coefficient matrix $(A^*)_{ij}$, we need to solve the corresponding cell problems: find $w_i$ such that
 \begin{equation}
     \begin{split}
-        -\div_y{A(y)(e_i) + \nabla_2w_i(y)} = 0
+        -\div_y(A(y)(e_i) + \nabla_2w_i(y)) = 0
     \end{split}
     \label{eq:cell_problem}
 \end{equation}
 where $w_i$ is periodic in $Y$.
 
-From \eqref{eq:cell_problem}, we obtain the diffusion coefficient by integration:
+From \eqref{eq:cell_problem}, we obtain the diffusion coefficient by evaluating the following expression
 
 \begin{equation}
     A^*_{ij} = \int_Y(e_j + \nabla_y w_j)\cdot(e_i + \nabla_y w_i)dy
