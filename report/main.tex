@@ -51,35 +51,15 @@ $$$$
 For $\epsilon \to 0$, it is possible to obtain an homogenized diffusivity, called 'effective diffusion coefficient'.
 If time permits, we will extend the model with a diffusion coefficient also varying in the normal length scale, and finally include time dependence in the model as well.
 
-\section{One-dimensional illustration}
-\label{sec:onedim}
-Let $A_\epsilon$ be defined as in \eqref{eq:diff_param}, let $f(x) = 1$ and let $\Omega = [0,1]$. For this particular choice, we are able to compute the solution to \eqref{eq:model} exactly:
-\begin{equation}
-    \left( \frac{u'(x)}{2+\cos \left( \frac{2\pi x}{\epsilon} \right)} \right)' = 1
-    \label{eq:one_dim}
-\end{equation}
-
-Integrating the left hand side of \eqref{eq:one_dim}, dividing by $A_\epsilon$, integrating by parts and substituting the Diriclet boundary condition yields
-\begin{equation}
-    u(x) = \left( \frac{1}{2} - x \right) \left(2x + \frac{\epsilon}{2\pi}\sin\left(\frac{2\pi x}{\epsilon}\right) \right) + \frac{\epsilon^2}{(2\pi)^2}\left( 1 - \cos \left( \frac{2\pi x}{\epsilon} \right) \right) + x^2
-   \label{eq:one_dim_sol}
-\end{equation}
-
-\begin{figure}[th]
-    \centering
-    \includegraphics[width=0.5\linewidth]{one_dim_exact.png}
-    \caption{Plot of the exact solution to \eqref{eq:one_dim} for $\epsilon=0.1$.}
-    \label{fig:one_dim_exact}
-\end{figure}
-
-Figure~\ref{fig:one_dim_exact} presents the solution $u$ for $\epsilon = 0.1$. We observe oscillations of size $\bigo{\epsilon}$ and frequency $\bigo{1/\epsilon}$.
-
-From \eqref{eq:one_dim_sol} we can induce that for $\epsilon \to 0$, the frequency of oscillations increases, but their amplitude decreases. This indicates that solving the equation with diffusivity $\lim_{\epsilon\to 0$}A_\epsilon$ results in a smooth solution.
-
 \section{Approximation with FeNiCS}
 \label{sec:one_dim_approx}
 
-We implement \eqref{eq:one_dim} in FeNiCS. The weak formulation is straightforward and thus, so is the Python code. An illustration of the numerical approximation is shown in Figure~\ref{fig:one_dim_numerical}. 
+We implement \eqref{eq:one_dim} in FeNiCS by providing the weak form
+\begin{equation}
+    \int_\Omega A_\epsilon\nabla u\nabla\phi dx= \int_\Omega f\phi dx
+\end{equation}
+where $\phi$ is a test function in $H^1_0(\Omega)$. We use second order Lagrangian basis functions on an evenly spaced unit interval mesh to find the weak solution.
+An illustration of the numerical approximation is shown in Figure~\ref{fig:one_dim_approx}. 
 
 \begin{figure}[ht]
     \centering
@@ -102,26 +82,91 @@ We implement \eqref{eq:one_dim} in FeNiCS. The weak formulation is straightforwa
     \label{fig:one_dim_h_eps2}
 \end{figure}
 
+\section{One-dimensional illustration}
+\label{sec:onedim}
+Let $A_\epsilon$ be defined as in \eqref{eq:diff_param}, let $f(x) = 1$ and let $\Omega = [0,1]$. For this particular choice, we are able to compute the solution to \eqref{eq:model} exactly, since it reduces to :
+\begin{equation}
+    \left( \frac{u'(x)}{2+\cos \left( \frac{2\pi x}{\epsilon} \right)} \right)' = 1
+    \label{eq:one_dim}
+\end{equation}
+
+Integrating the left hand side of \eqref{eq:one_dim}, dividing by $A_\epsilon$, integrating by parts and substituting the Diriclet boundary condition yields
+\begin{equation}
+    u(x) = \left( \frac{1}{2} - x \right) \left(2x + \frac{\epsilon}{2\pi}\sin\left(\frac{2\pi x}{\epsilon}\right) \right) + \frac{\epsilon^2}{(2\pi)^2}\left( 1 - \cos \left( \frac{2\pi x}{\epsilon} \right) \right) + x^2
+   \label{eq:one_dim_sol}
+\end{equation}
+
+\begin{figure}[th]
+    \centering
+    \includegraphics[width=0.5\linewidth]{one_dim_exact.png}
+    \caption{Plot of the exact solution to \eqref{eq:one_dim} for $\epsilon=0.1$.}
+    \label{fig:one_dim_exact}
+\end{figure}
+
+Figure~\ref{fig:one_dim_exact} presents the solution $u$ for $\epsilon = 0.1$. We observe oscillations of frequency $\bigo{1/\epsilon}$.
+
+From \eqref{eq:one_dim_sol} we can induce that for $\epsilon \to 0$, the frequency of oscillations increases, but their amplitude decreases. This indicates that solving the equation with diffusivity $\lim_{\epsilon\to 0$}A_\epsilon$ results in a smooth solution.
+
 In Figure~\ref{fig:one_dim_h_eps1}, we see that for any $\epsilon$, convergence to the exact solution only occurs for $h \lesssim \epsilon$. Once this grid size restriction is satisfied, we obtain second order convergence as usual. Figure~\ref{fig:one_dim_h_eps2} presents this more clearly.
 
-\section{Effective diffusion coefficients in higher dimensions}
+\section{Homogenization in higher dimensions}
 Now, let $\Omega \subset [0,1]^d$ for $d=2,3$. We extend $A_\epsilon$ to multiple dimensions:
 \begin{equation}
-    A_\epsilon(x) =  \left( 2+\cos\left(\frac{2\pi \sum_{i=1}^dx_i}{\epsilon}\right) \right)^{-1}
+    A_\epsilon(x) =  \left( 2+\cos\left(\frac{2\pi \sum_{i=1}^dc_ix_i}{\epsilon}\right) \right)^{-1}
 \end{equation}
-Let $i,j=1,\dots,d$. Let $e_i$ be the $i$th basis vector of $\R^d$. To find the effective diffusion coefficient matrix $(A^*)_{ij}$, we need to solve the corresponding cell problems: find $w_i$ such that
+where $c_i \in \R$ are arbitrary coefficients. 
+
+Let $i,j=1,\dots,d$. Let $e_i$ be the $i$th basis vector of $\R^d$. To find the effective diffusion coefficient matrix $(A^*)_{ij}$, we solve the corresponding cell problems: find $w_i$ such that
 \begin{equation}
     \begin{split}
-        -\div_y(A(y)(e_i) + \nabla_2w_i(y)) = 0
+        -\div_y(A(y)(e_i) + \nabla_y w_i(y)) = 0
     \end{split}
     \label{eq:cell_problem}
 \end{equation}
-where $w_i$ is periodic in $Y$.
-
-From \eqref{eq:cell_problem}, we obtain the diffusion coefficient by evaluating the following expression
+where $w_i$ are periodic in $Y$.
+We solve \eqref{eq:cell_problem} in FeNiCS. Its weak formulation is straightforward: find $w_i$ such that
+\begin{equation}
+    A(y)\nabla_y w_i \nabla_y \phi = \div_y(A(y)e_i)\phi
+    \label{eq:weak_cell_problem}
+\end{equation}
+holds for all $\psi \in H^1_0(Y)$. We use once more second order Lagrangian basis functions, this time on a unit square or cube.
+From the solution of \eqref{eq:cell_problem}, we obtain the diffusion coefficient by evaluating the following expression
 
 \begin{equation}
     A^*_{ij} = \int_Y(e_j + \nabla_y w_j)\cdot(e_i + \nabla_y w_i)dy
+    \label{eq:eff_diff}
 \end{equation}
 
+To find $A^*_{ij}$ in FeNiCS, we project the integrand of \eqref{eq:eff_diff} on the same function space as \eqref{eq:weak_cell_problem} and numerically integrate the result over $Y$.
+
+Below follows an example for specific $A_\epsilon$, with $c_1=1$, $c_2=2$, $\epsilon = 0.25$ (see Figure~\ref{fig:two_dim_diff}).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{two_dim_diff.png}
+    \caption{Two dimensional diffusion coefficient $A_\epsilon$}
+    \label{fig:two_dim_diff}
+\end{figure}
+
+Figure~\ref{fig:two_dim_approx} shows the corresponding solution of \eqref{eq:model}.
+By solving the cell problems from \eqref{eq:cell_problem},  we obtain $A_^*$ with values:
+\begin{equation}
+    A^* \approx \begin{bmatrix}
+        1.024 & 0.047\\
+        0.047 & 1.095
+    \end{bmatrix}
+\end{equation}
+Finally, solving \eqref{eq:model} substituting $A_\epsilon$ with $A^*$ yields the result depicted in Figure~\ref{fig:two_dim_homog_approx}.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{two_dim_approx.png}
+    \caption{Approximation of \eqref{eq:model} with $A_\epsilon$ as in Figure~\ref{fig:two_dim_diff}}
+    \label{fig:two_dim_approx}
+\end{figure}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{two_dim_homog_approx.png}
+    \caption{Homogenized approximation of \eqref{eq:model}.}
+    \label{fig:two_dim_homog_approx}
+\end{figure}
 \end{document}
