@@ -38,6 +38,7 @@ class PoissonSolver:
             self.dim = 1
         print("Solving rapid varying Poisson problem in R^%d" % self.dim)
         self.diff_coef = fe.Expression(a_eps, eps=self.eps, degree=2, domain=self.mesh)
+        self.a_y = fe.Expression(a_eps.replace("/eps",""), degree=2, domain=self.mesh)
         self.function_space = fe.FunctionSpace(self.mesh, 'P', 2)
         self.solution = fe.Function(self.function_space)
         self.cell_solutions = [fe.Function(self.function_space) for _ in range(self.dim)]
@@ -61,7 +62,7 @@ class PoissonSolver:
         """
         self._solve_cell_problems()
         eff_diff_coef = self._compute_effective_diffusion()
-        print("Computed effective diffusion coefficent:\n%s" % eff_diff_coef)
+        print("Computed effective diffusion coefficent:\n%s" % eff_diff_coef.values())
         self._solve_pde(eff_diff_coef)
 
     def _solve_pde(self, diff_coef):
@@ -77,9 +78,9 @@ class PoissonSolver:
         # Solves the cell problems (one for each space dimension)
         w = fe.TrialFunction(self.function_space)
         v = fe.TestFunction(self.function_space)
-        a = self.diff_coef * fe.dot(fe.grad(w), fe.grad(v)) * fe.dx
+        a = self.a_y * fe.dot(fe.grad(w), fe.grad(v)) * fe.dx
         for i in range(self.dim):
-            L = fe.div(self.diff_coef * self.e_is[i]) * v * fe.dx  # move these lines outside of loop
+            L = fe.div(self.a_y * self.e_is[i]) * v * fe.dx
             bc = fe.DirichletBC(self.function_space, self.bc_function, PoissonSolver.boundary)
             fe.solve(a == L, self.cell_solutions[i], bc)
             fe.plot(self.cell_solutions[i])
@@ -88,8 +89,8 @@ class PoissonSolver:
         # Uses the solutions of the cell problems to compute the harmonic average of the diffusivity
         for i, j in np.ndindex((self.dim, self.dim)):
             integrand_ij = fe.project(
-                fe.dot(self.e_is[i] + fe.grad(self.cell_solutions[i]),
-                       self.e_is[j] + fe.grad(self.cell_solutions[j])), self.function_space)
+                self.a_y*fe.dot(self.e_is[i] + fe.grad(self.cell_solutions[i]),
+                                self.e_is[j] + fe.grad(self.cell_solutions[j])), self.function_space)
             self.eff_diff[i, j] = fe.assemble(integrand_ij * fe.dx)
         return fe.Constant(self.eff_diff)
 
@@ -115,6 +116,6 @@ if __name__ == "__main__":
     eps = 1. / 2 ** 2
     dim = 2
     solver = PoissonSolver(h, eps, dim)
-    solver.solve_exact()
+    solver.solve_homogenized()
     solver.store_solution()
     solver.plot()
