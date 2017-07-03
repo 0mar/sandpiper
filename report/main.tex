@@ -71,7 +71,7 @@ An illustration of the numerical approximation is shown in Figure~\ref{fig:one_d
 \begin{figure}[ht]
     \centering
     \includegraphics[width=0.5\linewidth]{one_dim_h_eps1.png}
-    \caption{Logarithmic plot of error norms for $h\to$, several values of $\epsilon$.}
+    \caption{Logarithmic plot of error norms for $h\to 0$, several values of $\epsilon$.}
     \label{fig:one_dim_h_eps1}
 \end{figure}
 
@@ -90,7 +90,7 @@ Let $A_\epsilon$ be defined as in \eqref{eq:diff_param}, let $f(x) = 1$ and let 
     \label{eq:one_dim}
 \end{equation}
 
-Integrating the left hand side of \eqref{eq:one_dim}, dividing by $A_\epsilon$, integrating by parts and substituting the Diriclet boundary condition yields
+Integrating the left hand side of \eqref{eq:one_dim}, dividing by $A_\epsilon$, integrating by parts and substituting the Dirichlet boundary condition yields
 \begin{equation}
     u(x) = \left( \frac{1}{2} - x \right) \left(2x + \frac{\epsilon}{2\pi}\sin\left(\frac{2\pi x}{\epsilon}\right) \right) + \frac{\epsilon^2}{(2\pi)^2}\left( 1 - \cos \left( \frac{2\pi x}{\epsilon} \right) \right) + x^2
    \label{eq:one_dim_sol}
@@ -105,7 +105,7 @@ Integrating the left hand side of \eqref{eq:one_dim}, dividing by $A_\epsilon$, 
 
 Figure~\ref{fig:one_dim_exact} presents the solution $u$ for $\epsilon = 0.1$. We observe oscillations of frequency $\bigo{1/\epsilon}$.
 
-From \eqref{eq:one_dim_sol} we can induce that for $\epsilon \to 0$, the frequency of oscillations increases, but their amplitude decreases. This indicates that solving the equation with diffusivity $\lim_{\epsilon\to 0$}A_\epsilon$ results in a smooth solution.
+From \eqref{eq:one_dim_sol} we can induce that for $\epsilon \to 0$, the frequency of oscillations increases, but their amplitude decreases. This indicates that solving the equation with diffusivity $\lim_{\epsilon\to 0}A_\epsilon$ results in a smooth solution.
 
 In Figure~\ref{fig:one_dim_h_eps1}, we see that for any $\epsilon$, convergence to the exact solution only occurs for $h \lesssim \epsilon$. Once this grid size restriction is satisfied, we obtain second order convergence as usual. Figure~\ref{fig:one_dim_h_eps2} presents this more clearly.
 
@@ -129,7 +129,7 @@ We solve \eqref{eq:cell_problem} in FeNiCS. Its weak formulation is straightforw
     A(y)\nabla_y w_i \nabla_y \phi = \div_y(A(y)e_i)\phi
     \label{eq:weak_cell_problem}
 \end{equation}
-holds for all $\psi \in H^1_0(Y)$. We use once more second order Lagrangian basis functions, this time on a unit square or cube.
+holds for all $\phi \in H^1_0(Y)$. We use once more second order Lagrangian basis functions, this time on a unit square or cube.
 From the solution of \eqref{eq:cell_problem}, we obtain the diffusion coefficient by evaluating the following expression
 
 \begin{equation}
@@ -149,7 +149,7 @@ Below follows an example for specific $A_\epsilon$, with $c_1=1$, $c_2=2$, $\eps
 \end{figure}
 
 Figure~\ref{fig:two_dim_approx} shows the corresponding solution of \eqref{eq:model}.
-By solving the cell problems from \eqref{eq:cell_problem},  we obtain $A_^*$ with values:
+By solving the cell problems from \eqref{eq:cell_problem},  we obtain $A^*$ with values:
 \begin{equation}
     A^* \approx \begin{bmatrix}
         1.024 & 0.047\\
@@ -168,5 +168,90 @@ Finally, solving \eqref{eq:model} substituting $A_\epsilon$ with $A^*$ yields th
     \includegraphics[width=0.8\linewidth]{two_dim_homog_approx.png}
     \caption{Homogenized approximation of \eqref{eq:model}.}
     \label{fig:two_dim_homog_approx}
-\end{figure}
+ \end{figure}
+
+ In the multi-dimensinal case, we are no longer able to compute an analytical solution. Therefore, we will henceforth evaluate our homogenized results by comparing them to a non-homogenized solution computed on a fine mesh. As shown in Section~\ref{sec:onedim}, the reference solution must resolve the spatial variation in $\epsilon$. With finite computer memory, this puts a restriction on the $\epsilon$ range we can investigate of roughly
+\begin{equation}
+    (\frac{10}{\epsilon})^d\leq C_{max}(Element).
+    \label{eq:computational_restriction}
+  \end{equation}
+  Here, $C_{max}(Element)$ is the maximum number of cells the computer handles for a given choice of finite elements and the factor 10 ensures resolution of $\epsilon$.
+  
+  Let us now investigate the effect on the final problem solution of the spatial resolution in the cell problem solution. To do this, we solve the cell problem with a range of cell sizes $h_{cell,j}$ and use the obtained $A_{*,j}$ to compute homogenized global solutions. Then, we compute reference solutions as described in the previous paragraph for a range of $\epsilon_i$ which we compare the homogenized solutions to.
+
+  The result is displayed in Figure~\ref{fig:two_dim_cell_problem_errors}. It shows that for large $h_{cell}$, the error is dominated by the inaccuracy in the $A_{*}$ computation. As the mesh size is decreased, the error converges to a value dominated by a combination of the homogenization approximation and the error in the computation of the homogenized solution, i.e., related to the mesh size of the global solution, $h_{global}$. The former of these two decreases in $\epsilon$, as can be seen from the fact that each line of the figure lies beneath all lines corresponding to higher values of $\epsilon$. The second one is assumed to be negligible for this parameter range, as the global homogenized problem was solved with considerably higher accuracy than the cell problem ($h_{global}=\frac{1}{2^7}$).
+  We note that the error does not decrease monotonically in $h_{cell}$, but rather increases going from $2 \times 2$ to $4 \times 4$ cells. While we are not entirely sure about the reason for this, one possible explanation could be that the 2 by 2 grid is somehow favourably aligned with $A_{\epsilon}$. We note, however, that for this $\epsilon$ range, the error seems to converge for $h_{cell}\leq 1dsjkl$. Consequently, we will use this value in the following and assume that the cell problem error is negligible.
+
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{2d_cell_errors.png}
+    \caption{Errors as a function of cell problem discretization size $h_{cell}$ for various $\epsilon$ values.}
+    \label{fig:two_dim_cell_problem_errors}
+ \end{figure}
+
+ Now, we explore the convergence in the global mesh size $h_{global}$ of the homogenized solution for different values of $\epsilon$. We proceed as above, except that we keep fix $h_{cell}=1dslkf$ and vary  $h_{global}$. Figure~\ref{fig:two_dim_global_problem_errors} shows how an initial decrease before the error stagnates. The $\epsilon$ variation in the limit value shows the convergence of the homogenization model for $\epsilon\to 0$. This is of particular interest, since it validates that the homogenized solution approaches the full one as $\epsilon$ to   See also Figure~\ref{fig:two_dim_global_problem_errors} for the convergence rates of this case.
+   \begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{2d_global_errors.png}
+    \caption{Errors as a function of cell problem discretization size $h_{cell}$ for various $\epsilon$ values.}
+    \label{fig:two_dim_global_problem_errors}
+  \end{figure}
+   \begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{2d_global_rates.png}
+    \caption{Convergence rates as the global discretization size $h_{cell}$ approaches zero for various $\epsilon$ values.}
+    \label{fig:two_dim_global_problem_rates}
+  \end{figure}
+  \subsection{Extending domain complexity}
+  % Remains to be done!
+  \section{Solvers and preconditioners}
+  We now present a short study of the performance of different linear solver schemes and preconditioners for this Poisson type problem. We have chosen a subset of the available FEniCS options. The solver methods are Conjugate gradients (cg), Generalized minimal residual (gmres), Minimal residual (minres) and Biconjugate gradient stabilized (bicgstab) and the preconditioners Incomplete Cholesky factorization (icc), Incomplete LU factorization (ilu),  Jacobi iteration (jacobi), Successive over-relaxation (sor) and finally without any preconditioner (none). We have solved both the homogenized and the full problem with two different $h_{global}$ values, whereof the first ($\frac{1}{2^3}$) leads to a small, assumedly quite manageable problem, whereas the second ($\frac{1}{2^7}$) may pose a somewhat larger challenge.
+  The first observation is that using the Incomplete Cholesky factorization, the cg and minres fail to converge even for small problems. Convergence is maintained for the gmres and bicgstab also for the larger problem, although at rather poor computational times, see Figures~\ref{fig:solution_times_icc_big_h} and~\ref{fig:solution_times_icc_small_h}. The results from the rest of the simulations are presented in Figures~\ref{fig:solution_times_full_big_h} through \ref{fig:solution_times_homogenized_small_h}. We note that in general, there is less to tell the choices apart for the smaller problem. As expected, the absolute computing times are also much smalller, reducing even further our interest in those number. Focusing now on the larger system (Figures \ref{fig:solution_times_full_small_h} and \ref{fig:solution_times_homogenized_small_h}), the trend is that it pays off to use a preconditioner compared to solving without any (none). It also seems that the ilu is a good choice for larger Poisson problems, and that one might want to avoid using the gmres.
+%  \begin{tabular}[c]{l | c c c c}
+%     & cg & gmres & minres & bicgstab \\
+%    \hline
+%    none&  &  &  &  \\
+%    sor&  &  &  &  \\
+%    ilu&  &  &  &  \\
+%    jacobi&  &  &  &  \\
+%    \title{Computational times for different solver and preconditioner combinations}
+     %      \label{tab:solvers_and_preconditioners}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{solution_times_icc_big_h.png}
+    \caption{Computation times for the non-homogenized problem and coarse mesh using the gmres and bicgstab solvers and no and icc preconditioning.}
+    \label{fig:solution_times_icc_big_h}
+  \end{figure}
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{}%{solution_times_icc_small_h.png}
+    \caption{Computation times for the non-homogenized problem and fine mesh using the gmres and bicgstab solvers and no and icc preconditioning.}
+    \label{fig:solution_times_icc_small_h}
+  \end{figure}
+  
+  % Perhaps the following results should rather be presented in tables or as bar charts or something?
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{solution_times_full_big_h.png}
+    \caption{Computation times for the non-homogenized problem and coarse mesh using different solver-preconditioner combinations.}
+    \label{fig:solution_times_full_big_h}
+  \end{figure}
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{solution_times_homogenized_big_h.png}
+    \caption{Computation times for the homogenized problem and coarse mesh using different solver-preconditioner combinations.}
+    \label{fig:solution_times_full_big_h}
+  \end{figure}
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{solution_times_full_small_h.png}
+    \caption{Computation times for the non-homogenized problem and fine mesh using different solver-preconditioner combinations.}
+    \label{fig:solution_times_full_small_h}
+  \end{figure}
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{solution_times_homogenized_small_h.png}
+    \caption{Computation times for the homogenized problem and fine mesh using different solver-preconditioner combinations.}
+    \label{fig:solution_times_full_small_h}
+  \end{figure}
 \end{document}
