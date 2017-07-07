@@ -204,36 +204,41 @@ Finally, solving \eqref{eq:model} substituting $A_\epsilon$ with $A^*$ yields th
   \end{figure}
 
   \subsection{Complex domains}\label{sec:car}
-  In this section, we briefly investigate the possibilities of FEniCS offers for more complicated domains. To this end, we set up the domain geometry shown in Figure~\ref{fig:car_grid}. We again perform simulations for different $\epsilon$ values (Figures~\ref{fig:car_reference_0} and \ref{fig:car_reference_3}) to the homogenized solution displayed in Figure~\ref{car_homogenized}. The computational parameters are listed in Table~\ref{tab:car_values}. Using fine meshes for both the cell and global problem, we can again investigate the convergence for decreasing $\epsilon$. The errors of the homogenized solution compared to the full one for each $\epsilon$ are plotted in Figure~\ref{}, and seem to validate the convergence in the limit. The reduction in convergence rate observed for the smaller $\epsilon$ is assumed to be due to errors caused by the finitude of $h_{cell}$ and $h_{global}$. 
+  In this section, we briefly investigate the possibilities of FEniCS offers for more complicated domains. To this end, we set up a somewhat more demanding domain geometry. We again perform simulations for different $\epsilon$ values (Figures~\ref{fig:car_reference_0} and \ref{fig:car_reference_3}) to the homogenized solution displayed in Figure~\ref{car_homogenized}. The computational parameters are listed in Table~\ref{tab:car_values}. Using fine meshes for both the cell and global problem, we can again investigate the convergence for decreasing $\epsilon$. The errors of the homogenized solution compared to the full one for each $\epsilon$ are plotted in Figure~\ref{}, and seem to validate the convergence in the limit. The slight reduction in convergence rate observed for the smaller $\epsilon$ is assumed to be due to errors caused by the finitude of $h_{cell}$ and $h_{global}$. 
   
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\linewidth]{car_mesh.png}
-    \caption{Coarse mesh of the cartoon car domain used throughout Section~\ref{sec:car}.}
-    \label{fig:car_grid}
-  \end{figure}
+
   \begin{figure}[h]
     \centering
-    \includegraphics[width=0.8\linewidth]{car_reference_eps_power_0.png}
+    \includegraphics[width=0.8\linewidth]{carw_reference_eps_power_1.png}
     \caption{Solution of the Poisson problem on a cartoon car domain for $\epsilon = \frac{1}{2}$.}
     \label{fig:car_reference_1}
   \end{figure}
   \begin{figure}[h]
     \centering
-    \includegraphics[width=0.8\linewidth]{car_reference_eps_power_3.png}
+    \includegraphics[width=0.8\linewidth]{carw_reference_eps_power_3.png}
     \caption{Solution of the Poisson problem on a cartoon car domain for $\epsilon = \frac{1}{2^3}$.}
     \label{fig:car_reference_3}
   \end{figure}
   \begin{figure}[h]
     \centering
-    \includegraphics[width=0.8\linewidth]{car_homogenized.png}
-    \caption{Solution of the Poisson problem on a cartoon car domain for $\epsilon = \frac{1}{2^3}$.}
+    \includegraphics[width=0.8\linewidth]{carw_homogenized.png}
+    \caption{Homogenized solution of the Poisson problem on a cartoon car domain.}
     \label{fig:car_homogenized}
+  \end{figure}
+   \begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{carw_errors.png}
+    \caption{Errors of the homogenized solution for $\epsilon \in [\frac{1}{2^3}, 1]$.}
+    \label{fig:car_errors}
   \end{figure}
   
   \section{Solvers and preconditioners}
   We now present a short study of the performance of different linear solver schemes and preconditioners for this Poisson type problem. We have chosen a subset of the available FEniCS options. The solver methods are Conjugate gradients (cg), Generalized minimal residual (gmres), Minimal residual (minres) and Biconjugate gradient stabilized (bicgstab) and the preconditioners Incomplete Cholesky factorization (icc), Incomplete LU factorization (ilu),  Jacobi iteration (jacobi), Successive over-relaxation (sor) and finally without any preconditioner (none). We have solved both the homogenized and the full problem with two different $h_{global}$ values, whereof the first ($\frac{1}{2^3}$) leads to a small, assumedly quite manageable problem, whereas the second ($\frac{1}{2^7}$) may pose a somewhat larger challenge.
-  The first observation is that using the Incomplete Cholesky factorization, the cg and minres fail to converge even for small problems. Convergence is maintained for the gmres and bicgstab also for the larger problem, although at rather poor computational times, see Figures~\ref{fig:solution_times_icc_big_h} and~\ref{fig:solution_times_icc_small_h}. The results from the rest of the simulations are presented in Figures~\ref{fig:solution_times_full_big_h} through \ref{fig:solution_times_homogenized_small_h}. We note that in general, there is less to tell the choices apart for the smaller problem. As expected, the absolute computing times are also much smalller, reducing even further our interest in those number. Focusing now on the larger system (Figures \ref{fig:solution_times_full_small_h} and \ref{fig:solution_times_homogenized_small_h}), the trend is that it pays off to use a preconditioner compared to solving without any (none). It also seems that the ilu is a good choice for larger Poisson problems, and that one might want to avoid using the gmres.
+  The first observation is that using the Incomplete Cholesky factorization, the cg and minres fail to converge even for small problems. Convergence is maintained for the gmres and bicgstab also for the larger problem, although at rather poor computational times, see Figures~\ref{fig:solution_times_icc_big_h} and~\ref{fig:solution_times_icc_small_h}. The results from the rest of the simulations are presented in Figures~\ref{fig:solution_times_full_big_h} through \ref{fig:solution_times_homogenized_small_h}. We note that in general, there is less to tell the choices apart for the smaller problem. As expected, the absolute computing times are also much smalller, reducing even further our interest in those number.
+
+  Focusing now on the larger system (Figures \ref{fig:solution_times_full_small_h} and \ref{fig:solution_times_homogenized_small_h}), the trend is that it pays off to use a preconditioner compared to solving without any (none). It also seems that the ilu is a good choice for larger Poisson problems, and that one might want to avoid using the gmres.
+
+  Finally, we include the same data for the full problem on an even finer mesh ($h_{global}=\frac{1}{2^9}$). It shows the same general trends as on the mesh just discussed, with the exception that gmres now fails to converge at all both with the jacobi preconditioner and without preconditioning, see Figure~\ref{fig:solution_times_full_tiny_h}. 
 %  \begin{tabular}[c]{l | c c c c}
 %     & cg & gmres & minres & bicgstab \\
 %    \hline
@@ -280,5 +285,11 @@ Finally, solving \eqref{eq:model} substituting $A_\epsilon$ with $A^*$ yields th
     \includegraphics[width=0.8\linewidth]{solution_times_homogenized_small_h.png}
     \caption{Computation times for the homogenized problem and fine mesh using different solver-preconditioner combinations.}
     \label{fig:solution_times_full_small_h}
+  \end{figure}
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{solution_times_homogenized_tiny_h.png}
+    \caption{Computation times for the homogenized problem and really fine mesh using different solver-preconditioner combinations.}
+    \label{fig:solution_times_full_tiny_h}
   \end{figure}
 \end{document}

@@ -173,7 +173,7 @@ def compare_cars(eps_list,n_cells, file_name, dim=2):
 
     #car_mesh = create_car_mesh(30)
     fine_car_mesh = create_car_mesh(n_cells)
-    s_homo = PoissonSolver(1/n_cells, 42, dim, mesh=fine_car_mesh)
+    s_homo = PoissonSolver(1/n_cells, 42, dim, degree=2, mesh=fine_car_mesh)
     s_homo._solve_pde(eff_diff_coef)
     fn = file_name+'_homogenized.pvd'
     s_homo.store_solution(fn)
@@ -182,11 +182,12 @@ def compare_cars(eps_list,n_cells, file_name, dim=2):
     for eps_step, eps in enumerate(eps_list):
         
         # Compute reference solution for this epsilon
-        s_ref = PoissonSolver(1/n_cells, eps, dim, degree =4, mesh=fine_car_mesh)
+        s_ref = PoissonSolver(1/n_cells, eps, dim, degree =5, mesh=fine_car_mesh)
         s_ref.solve_exact()
         fe.plot(s_ref.solution)
         plt.axis('off')
         plt.title('Reference solution, eps = %.2e \n \n \n \n ' % eps)
+        plt.savefig('../report/images/carw_reference_eps_power_%i.png' % eps_step)
         plt.figure()
         fn = file_name+'%f.pvd' % eps
         print(fn)
@@ -199,6 +200,7 @@ def compare_cars(eps_list,n_cells, file_name, dim=2):
     fe.plot(s_homo.solution)
     plt.title('Homogenized solution \n \n \n \n ')
     plt.axis('off')
+    plt.savefig('../report/images/carw_homogenized.png')
     fe.interactive()
     plt.show(block=False)
     return(errors)
@@ -344,7 +346,7 @@ def create_car_mesh(mesh_size):
     # Create list of polygonal domain vertices
     bodywork = [Point(0.0, 0.3),
                 Point(3, 0.3),
-                Point(2.9, 0.7),
+                Point(2.95, 0.7),
                 Point(2.6, 0.8),
                 Point(2.3, 1.3),
                 Point(1.0, 1.3),
@@ -352,16 +354,16 @@ def create_car_mesh(mesh_size):
                 Point(0.05, 0.7),
                 Point(0.0, 0.3)]
 
-    window1  = [Point(1.3, 1.2),
-                Point(2.2, 1.2),
-                Point(2.2, 1.6),
-                Point(1.6, 1.6),
-                Point(1.3, 1.2)]
-    window2  = [Point(2.5, 1.2),
-                Point(3.2, 1.2),
-                Point(3.0, 1.6),
-                Point(2.5, 1.6),
-                Point(2.5, 1.2)]
+    window1  = [Point(0.8, 0.8),
+                Point(1.45, 0.8),
+                Point(1.45, 1.2),
+                Point(1.05, 1.2),
+                Point(0.8, 0.8)]
+    window2  = [Point(1.65, 0.8),
+                Point(2.3, 0.8),
+                Point(2.1, 1.2),
+                Point(1.65, 1.2),
+                Point(1.65, 0.8)]
 
     
 
@@ -369,18 +371,18 @@ def create_car_mesh(mesh_size):
     bw = Polygon(bodywork)
     window1 = Polygon(window1)
     window2 = Polygon(window2)
-    wheel1 = Circle(Point(2.2,0.3), .3)
-    wheel2 = Circle(Point(0.8,0.3), .3)
-    car = bw+ wheel1+wheel2#-window1-window2
+    wheel1 = Circle(Point(2.25,0.27), .3)
+    wheel2 = Circle(Point(0.75,0.27), .3)
+    car = bw+ wheel1+wheel2-window1-window2
     # Generate mesh and plot
     mesh = generate_mesh(car, mesh_size)
     print('''Created mesh with %i cells of maximum size %f 
         (compare to $\epsilon$ for reference solutions)'''
           %(mesh.cells().shape[0], mesh.hmax()))
-    #plot(mesh)
-    #plt.show(block=False)
-    #input('Hit return to close plot')
-    #plt.close()
+    plot(mesh)
+    plt.show(block=False)
+    input('Hit return to close plot')
+    plt.close()
     return mesh
 
 #---------------------------------------------------------------------#
@@ -420,24 +422,25 @@ def stored_solutions():
     """
     #solver_comparison, h_global = 9, eps = 0
     times_ref = np.array(
-        [[  8.191715            nan  13.05460715   8.19411731]
-         [  5.11841059  36.65315652   7.35329151   5.84721565]
-         [  2.63757253  12.59475803   4.49874902   2.95621014]
-         [  6.91874003          nan  14.43135071   6.99962544]])
+        [[  8.191715,            nan,  13.05460715,   8.19411731],
+         [  5.11841059,  36.65315652,   7.35329151,   5.84721565],
+         [  2.63757253,  12.59475803,   4.49874902,   2.95621014],
+         [  6.91874003,          nan,  14.43135071,   6.99962544]])
     times_homo = np.array(
-        [[  6.21782589          nan  11.81072927   6.34943771]
-         [  4.85342669  41.89151621   8.58132935   6.738096  ]
-         [  2.293957    10.9519248    4.49466801   2.3979404 ]
-         [  6.51827908          nan  11.3594017    7.83625436]])
+        [[  6.21782589,          nan,  11.81072927,   6.34943771],
+         [  4.85342669,  41.89151621,   8.58132935,   6.738096  ],
+         [  2.293957,    10.9519248,    4.49466801,   2.3979404 ],
+         [  6.51827908,          nan,  11.3594017,    7.83625436]])
 
 #---------------------------------------------------------------------#
 
 
 if __name__ == "__main__":
     # The script may be used for three different purposes 
-    solver_comparison = True#False
+    solver_comparison = False
     cell_and_global = False
-    geometry = False
+    geometry = True#False
+    show_off = True
     if solver_comparison:
         n_h = 1
         n_e = 1
@@ -512,10 +515,12 @@ if __name__ == "__main__":
 
         # Solve problem
         t = time1.time()
+        #create_car_mesh(30)
         #errors = compare_cars(eps_list, n_cells, file_name)
         print('Full evaluation took ', time1.time()-t)
-        errors = [  1.62851640e-05,   8.26573364e-06,   4.87418268e-06,   3.60014481e-06]
-        
+        #errors = [  1.62851640e-05,   8.26573364e-06,   4.87418268e-06,   3.60014481e-06] # without windows
+        errors = [  8.71610346e-06,   4.52455804e-06,   2.28755036e-06,   1.33245985e-06]
+        print('errors: ', errors)
         # Plot convergence:
         print('eps',eps_list)
         plt.figure()
@@ -531,5 +536,12 @@ if __name__ == "__main__":
     input('Hit enter to close exit (and close plots)')
 
 
-            
+    if show_off:
+        # Set parameters
+
+        # Make mesh
+        f = 5
+        # Initalize
+
+        # Loop in time
    
