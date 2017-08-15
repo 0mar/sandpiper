@@ -4,6 +4,10 @@
 *.log
 *.pdf
 *.synctex.gz
+*.nav
+*.snm
+*.toc
+*.out
 
 *.vtu
 *.pvd
