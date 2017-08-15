@@ -285,7 +285,7 @@ def compare_solutions_global(eps_list, h_global_list, dim=2):
 #---------------------------------------------------------------------#
 
 
-def compare_solvers(eps, h_global_list, solver_types, prec_list):
+def compare_solvers(eps, h_global, solver_types, prec_list):
     dim = 2
     times_ref = np.zeros((len(prec_list),len(solver_types)))
     times_homo = np.zeros((len(prec_list),len(solver_types)))
@@ -298,7 +298,7 @@ def compare_solvers(eps, h_global_list, solver_types, prec_list):
     for solver_step, solver in enumerate(solver_types):
         for prec_step, prec in enumerate(prec_list):
             
-            h = h_global_list[0]
+            h = h_global
             print(solver, prec)
         
             s_ref = PoissonSolver(h, eps, dim, degree =1)
@@ -444,7 +444,7 @@ def evaluate_timestep(s_global, t, h_cell):
 
 
     
-def plot_solver_data(times_homo, times_ref,h_global_list, solver_types, preconditioners):
+def plot_solver_data(times_homo, times_ref,h_gl, solver_types, preconditioners):
     plt.close('all')
     plt.yscale('log')
     
@@ -457,7 +457,29 @@ def plot_solver_data(times_homo, times_ref,h_global_list, solver_types, precondi
         b = plt.bar(x + i * dimw, y, dimw, bottom=0.001)
     plt.legend(solver_types)
     plt.xticks(np.arange(len(preconditioners))+np.ones(len(preconditioners))*dimw/2, preconditioners, rotation='vertical')
+    
+    axes = plt.gca()
+    axes.set_ylim([.3,24])
+    plt.ylabel('time', rotation='vertical')
+    nc = 2**(2*h_gl)
+    plt.title('Solution times for full problem, {:.1E} cells'.format(nc))#% h_global_list[0])
+
     plt.figure()
+    plt.yscale('log')
+    for i in range(times_homo.shape[0]):
+        y = [d[i] for d in times_homo]
+        b = plt.bar(x + i * dimw, y, dimw, bottom=0.001)
+    plt.legend(solver_types)
+    plt.xticks(np.arange(len(preconditioners))+np.ones(len(preconditioners))*dimw/2, preconditioners, rotation='vertical')
+    
+    axes = plt.gca()
+    axes.set_ylim([.3,24])
+    plt.ylabel('time', rotation='vertical')
+    
+    plt.title('Solution times for homogenized problem, {:.1E} cells'.format(nc))#% h_global_list[0])
+    
+    plt.show(block=False)
+    return
     plt.semilogy(times_ref)
     plt.title('Solution times for full problem, h = %f' % h_global_list[0])
     plt.legend(solver_types)
@@ -468,7 +490,7 @@ def plot_solver_data(times_homo, times_ref,h_global_list, solver_types, precondi
     plt.xticks(np.arange(len(preconditioners)), preconditioners, rotation='vertical')
     plt.title('Solution times for homogenized problem, h = %f' % h_global_list[0])
     plt.legend(solver_types)
-    plt.show(block=False)
+    
 
 #---------------------------------------------------------------------#
     
@@ -478,32 +500,42 @@ def stored_solutions():
     """
     #solver_comparison, h_global = 9, eps = 0
     times_ref = np.array(
-        [[  8.191715,            nan,  13.05460715,   8.19411731],
+        [[  8.191715,            float('nan'),  13.05460715,   8.19411731],
          [  5.11841059,  36.65315652,   7.35329151,   5.84721565],
          [  2.63757253,  12.59475803,   4.49874902,   2.95621014],
-         [  6.91874003,          nan,  14.43135071,   6.99962544]])
+         [  6.91874003,          float('nan'),  14.43135071,   6.99962544]])
     times_homo = np.array(
-        [[  6.21782589,          nan,  11.81072927,   6.34943771],
+        [[  6.21782589,          float('nan'),  11.81072927,   6.34943771],
          [  4.85342669,  41.89151621,   8.58132935,   6.738096  ],
          [  2.293957,    10.9519248,    4.49466801,   2.3979404 ],
-         [  6.51827908,          nan,  11.3594017,    7.83625436]])
-
+         [  6.51827908,          float('nan'),  11.3594017,    7.83625436]])
+    tr_8 = np.array([[  0.99127626,  23.17382479,   1.28662777,   1.04913497],
+       [  0.69222307,   3.23113894,   0.83439064,   0.99728251],
+       [  0.62268639,   0.87030935,   0.51625276,   0.42412806],
+       [  0.82240033,  12.16858339,   1.14180565,   0.79825974]])
+    th_8 = np.array([[  0.84229136,  14.1169703 ,   1.03939867,   1.08646965],
+       [  1.03686857,   2.92545295,   1.24408674,   1.00220394],
+       [  0.44128227,   0.71016026,   0.43579865,   0.39884138],
+       [  1.69220471,  15.88684011,   2.1891706 ,   0.84371662]])
+    return tr_8, th_8
 #---------------------------------------------------------------------#
 
 
 if __name__ == "__main__":
     # The script may be used for three different purposes 
-    solver_comparison = False
+    solver_comparison = True#False
     cell_and_global = False
     geometry = False
-    show_off = True
+    show_off = False#True
     if solver_comparison:
         n_h = 1
         n_e = 1
         epsilon = 3
         n_glob_h = 1
         h0=0
-        h_global = 9#3 #7,9 prøv ni
+        h_global = 8#3 #7,9 prøv ni
+        
+        hglob0 = h_global
         print('ncells will be ',2**(hglob0**2))
         fe.list_krylov_solver_methods()
         fe.list_krylov_solver_preconditioners()
@@ -519,11 +551,12 @@ if __name__ == "__main__":
         h_global_list = [1. / 2 ** i for i in range(hglob0, hglob0+n_glob_h)]
         
         
-        times_ref, times_homo=compare_solvers(epsilon, h_global, solver_types, preconditioners)
+        #times_ref, times_homo=compare_solvers(epsilon, 1/2**h_global, solver_types, preconditioners)
+        times_ref, times_homo= stored_solutions()
         
-        print(times_ref)
-        print(times_homo)
-        plot_solver_data(times_homo, times_ref,h_global_list, solver_types, preconditioners)
+        print(repr(times_ref))
+        print(repr(times_homo))
+        plot_solver_data(times_homo, times_ref,h_global, solver_types, preconditioners)
 
     if cell_and_global:    
     
