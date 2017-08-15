@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 
 
 class PoissonSolver:
-    def __init__(self, h, eps, dim, degree = 1, mesh=None):
+    def __init__(self, h, eps, dim, degree = 2, mesh=None, time=None):
         """
         Initializing poisson solver
         :param h: mesh size (of unit interval discretisation)
@@ -42,16 +42,23 @@ class PoissonSolver:
                 #plt.show()
             a_eps = '1./(2+cos(2*pi*(x[0]+2*x[1])/eps))'
             self.e_is = [fe.Constant((1., 0.)), fe.Constant((0., 1.))]
+            self.diff_coef = fe.Expression(a_eps, eps=self.eps, degree=2, domain=self.mesh)
         elif self.dim == 3:
-            self.mesh = fe.UnitCubeMesh(self.n, self.n, self.n)
-            a_eps = '1./(2+cos(2*pi*(x[0]+3*x[1]+6*x[2])/eps))'
+            if mesh is None:
+                self.mesh = fe.UnitCubeMesh(self.n, self.n, self.n)
+            else:
+                self.mesh = mesh
+            a_eps = '({}*x[0]*x[0]+1)/(2+cos(2*pi*(x[0]+2*x[1]+x[2])/eps))'.format(time)#(x[1]*x[1]+x[2]*x[2]+{}*x[0]*x[0])
+            print(a_eps, self.eps)
             self.e_is = [fe.Constant((1., 0., 0.)), fe.Constant((0., 1., 0.)), fe.Constant((0., 0., 1.))]
+            self.diff_coef = fe.Expression(a_eps, eps=self.eps, degree=2, domain=self.mesh)
+
         else:
             self.mesh = fe.UnitIntervalMesh(self.n)
             a_eps = '1./(2+cos(2*pi*x[0]/eps))'
             self.dim = 1
-        #print("Solving rapid varying Poisson problem in R^%d" % self.dim)
-        self.diff_coef = fe.Expression(a_eps, eps=self.eps, degree=2, domain=self.mesh)
+            #print("Solving rapid varying Poisson problem in R^%d" % self.dim)
+            self.diff_coef = fe.Expression(a_eps, eps=self.eps, degree=2, domain=self.mesh)
         self.a_y = fe.Expression(a_eps.replace("/eps",""), degree=2, domain=self.mesh)
         self.function_space = fe.FunctionSpace(self.mesh, 'P', degree)
         self.solution = fe.Function(self.function_space)
@@ -60,6 +67,9 @@ class PoissonSolver:
         # Define boundary condition
         self.bc_function = fe.Constant(0.0)
         self.f = fe.Constant(0.001)
+        
+    
+
 
     def solve_exact(self, solve_method=None, prec=None):
         """
@@ -136,18 +146,26 @@ class PoissonSolver:
                 self.a_y*fe.dot(self.e_is[i] + fe.grad(self.cell_solutions[i]),
                                 self.e_is[j] + fe.grad(self.cell_solutions[j])), self.function_space)
             self.eff_diff[i, j] = fe.assemble(integrand_ij * fe.dx)
+        
         return fe.Constant(self.eff_diff)
 
-    def store_solution(self, file_name=None):
+    def store_solution(self, file_handle=None, time=None):
         # Store the solution to file
-        if file_name is None:
-            vtkfile = fe.File('results/solution.pvd')
+        if file_handle is None:
+            file_handle = fe.File('results/solution.pvd')
+        
+        
+        if time is None:
+            file_handle << self.solution
         else:
-            vtkfile = fe.File(file_name)
-        vtkfile << self.solution
+            print(float(time))
+            u = self.solution.copy()
+            u.rename('heat', '1222')
+            file_handle << (u, float(time))
 
     def plot(self):
         # Quickplot of the solution
+        plt.figure()
         fe.plot(self.diff_coef, mesh=self.mesh)
         plt.figure()
         fe.plot(self.solution)
@@ -336,6 +354,32 @@ def plot_errors(e_t, c_r, epsilons,h_val, problem='global'):
 
 #---------------------------------------------------------------------#
 
+def mesh_3d(mesh_size):
+
+    box = Box(Point(0, 0, 0), Point(1, 1, 1))
+    sphere1 = Sphere(Point(-0.1,0, 1), 0.7)
+    sphere2 = Sphere(Point(.1, .2, 1), 0.4)
+    cone = Cone(Point(0, 0, 1), Point(0, 0, -1.5), 1., segments=20)
+    g3d = sphere1+ cone #- sphere
+
+    # Test printing
+    #info("\nCompact output of 3D geometry:")
+    #info(g3d)
+    #info("\nVerbose output of 3D geometry:")
+    #info(g3d, True)
+
+    # Plot geometry
+    #plot(g3d, "3D geometry (surface)")
+
+    # Generate and plot mesh
+    mesh3 = generate_mesh(g3d, mesh_size)
+    info(mesh3)
+    plot(mesh3, "3D mesh")
+    plt.axis('equal')
+    interactive()
+    return mesh3
+
+#---------------------------------------------------------------------#
 def create_car_mesh(mesh_size):
     '''
     Creates and returns a dolfin mesh of a cartoon car. 
@@ -387,7 +431,19 @@ def create_car_mesh(mesh_size):
 
 #---------------------------------------------------------------------#
 
+def evaluate_timestep(s_global, t, h_cell):
+    # Cell
+    d = 3
+    s_cell = PoissonSolver(h_cell, 1, d, time = t)
+    
+    s_cell._solve_cell_problems()
+    eff_diff_coef = s_cell._compute_effective_diffusion()
+    print('A_eps for time step {} is {}'.format(t, eff_diff_coef.values()) )
+    # Global
+    s_global._solve_pde(eff_diff_coef)
 
+
+    
 def plot_solver_data(times_homo, times_ref,h_global_list, solver_types, preconditioners):
     plt.close('all')
     plt.yscale('log')
@@ -439,7 +495,7 @@ if __name__ == "__main__":
     # The script may be used for three different purposes 
     solver_comparison = False
     cell_and_global = False
-    geometry = True#False
+    geometry = False
     show_off = True
     if solver_comparison:
         n_h = 1
@@ -530,18 +586,36 @@ if __name__ == "__main__":
         plt.title("Logplot of errors")
         plt.xticks(np.arange(len(eps_list)), eps_list, rotation='vertical')
         
-        plt.show(block=False)
+        
 
 
-    input('Hit enter to close exit (and close plots)')
+    
 
 
     if show_off:
         # Set parameters
-
+        dim = 3
+        mesh_size = 35
+        h_cell = 1e-1
+        epsilon = 1/2**0
+        file_name= 'results/3d_solution.pvd'
+        f = fe.File(file_name)
         # Make mesh
-        f = 5
+        mesh_3= mesh_3d(mesh_size)
         # Initalize
-
+        
+        s_global = PoissonSolver(1/mesh_size, epsilon, dim, mesh=mesh_3, time=0)
+        #plot(s_global, mesh=self.mesh)
+        #plot.show()
         # Loop in time
-   
+        n_t=5
+        timesteps = range(n_t)
+        for t_step, t in enumerate(timesteps):
+            print('Solve at t = ', t)
+            evaluate_timestep(s_global, t, h_cell)
+            print('Store for time step {} of {}'.format(t_step, n_t))
+            s_global.store_solution(f, t)
+            s_global.plot()
+    #f << s_global.solution
+    #plt.show(block=False)
+    input('Hit enter to close exit (and close plots)')
