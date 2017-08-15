@@ -1,5 +1,9 @@
 \documentclass{beamer}
+\graphicspath{{./images/}}
+\renewcommand\L{\mathcal{ L}}
+\renewcommand{\epsilon}{\varepsilon}
 \renewcommand{\div}[1]{\operatorname{div}\left( #1 \right)}
+
 \usetheme{Warsaw}
 \usecolortheme{beaver}
 \title[Numerical homogenization]{Numerical Homogenization in Fenics}
@@ -70,14 +74,80 @@
 \end{frame}
 
 \begin{frame}[t]{2D approximation}
+  \begin{columns}
+    \begin{column}[c]{.6\textwidth}
+      \begin{itemize}
+        \item
+        %\begin{equation}
+         $ A_\epsilon(x) =  \left( 2+\cos\left(\frac{2\pi(x+2y)}{\epsilon}\right) \right)^{-1}$
+        %\end{equation}
+       \item Solve cell problem with relatively high resolution.
+       \item Remaining error:
+      \begin{itemize}
+        \item Model, $\epsilon > 0$
+        \item Finite solution of the global problem, $\h_{global} > 0$
+        \item Convergence in both  $\epsilon$ and $h_{global}$.
+       \end{itemize}
+      \end{itemize}
+    \end{column}
+    \begin{column}[c]{.4\textwidth}
+      \includegraphics[width=0.9\linewidth]{2d_global_errors.png}      % \includegraphics[width=0.65\linewidth]{2d_cell_errors.png}
+    \end{column}
+  \end{columns}
 
 \end{frame}
 
 \begin{frame}[t]{Solvers \& preconditioners}
+  \begin{columns}
+    \begin{column}[c]{.5\textwidth}
+      \begin{itemize}
+      \item Incomplete LU and Conjugate Gradient good for symmetric problems.
+      \item GMRES expensive, convergence not granted for increased number of cells.
+    \end{itemize}
+  \end{column}
+  \begin{column}[c]{.5\textwidth}
 
+    \includegraphics[width=0.9\linewidth]{SolverTimesFullh8.png}
+
+    \includegraphics[width=0.9\linewidth]{SolverTimesHomoh8.png}
+
+ \end{column}
+\end{columns}
 \end{frame}
 
-\begin{frame}[t]{Application}
+\begin{frame}[t]{Application I}
+  \begin{columns}
+    \begin{column}[c]{.5\textwidth}
+      \begin{itemize}
+      \item Resolution of small $\epsilon$ unachievable due to complexity.
+      \item Convergence in the  $\epsilon$ limit.
+      \end{itemize}
+      \includegraphics[width=0.65\linewidth]{carw_errors.png}
+  \end{column}
+  \begin{column}[c]{.5\textwidth}
+
+    \includegraphics[width=0.65\linewidth]{carw_homogenized.png}
+
+    \includegraphics[width=0.65\linewidth]{carw_reference_eps_power_1.png}
+
+    \includegraphics[width=0.65\linewidth]{carw_reference_eps_power_3.png}
+
+ \end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}[t]{Application II}
+  \begin{columns}
+    \begin{column}[c]{.5\textwidth}
+      \begin{itemize}
+      \item Three dimensions and time dependency add to computational cost.
+      \item Homogenization usually only possibility, allows for simulations on a range of different applications.
+    \end{itemize}
+  \end{column}
+  \begin{column}[c]{.5\textwidth}
+
+ \end{column}
+\end{columns}
 
 \end{frame}
 \end{document}
