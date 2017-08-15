@@ -1,8 +1,5 @@
 \documentclass{beamer}
-\renewcommand\L{\mathcal{ L}}
-\newcommand{\embed}{\hookrightarrow}
-\newcommand{\embedembed}{\hookrightarrow\hookrightarrow}
-
+\renewcommand{\div}[1]{\operatorname{div}\left( #1 \right)}
 \usetheme{Warsaw}
 \usecolortheme{beaver}
 \title[Numerical homogenization]{Numerical Homogenization in Fenics}
@@ -14,29 +11,47 @@
     Karlstad University, Sweden \and University of Bergen, Norway
 }
 \date[]{Nordic Computational Course, 2017}
-\subject{Numerical Homogenization}
+\subject{Numerical Homogenization 1}
 
 \begin{document}
   \frame{\titlepage}
 \begin{frame}{Introduction}
+  Homogenization:
   \begin{itemize}
     \item Composite Material
-    \item Highly varying...
-    \item Difficult to approximate
+    \item Highly varying conductivity/diffusion
+    \item microscropic structures
   \end{itemize}
 \end{frame}
 
 \begin{frame}[t]{Project aim}
+    Use FeNiCS to approximate automated homogenized solutions
+\end{frame}
+
+\begin{frame}[t]{Model}
+    Let $\varepsilon>0$. Find $u(x)$ s.t.
+    \begin{equation}
+        \begin{split}
+            -\div{A_\varepsilon(x)\nabla u(x))} &= f(x) \mbox{ for } x \in \Omega,\\
+            u_\varepsilon(x) &= 0 \mbox{ for } x \in \partial\Omega.
+        \end{split}
+        \label{eq:model}
+    \end{equation}
+     $A_\varepsilon(x)$ has period $\varepsilon$.
 
 \end{frame}
 
 \begin{frame}[t]{Upscaling}
-
+    Scale separation: \begin{itemize}
+        \item macroscopic $ x$, microscopic $y:= x/\varepsilon$.
+        \item Ansatz: power expansion: $u_\varepsilon(x,y) = \sum_i \varepsilon^i u_i(x,y)$
+        \item $\nabla u_i(x) = \varepsilon^{-1}\nabla_yu_i + \nabla_xu_i(x,y)$
+    \end{itemize}
+    .\\
+    then we obtain $\lim_{\varepsilon\to 0} u_\varepsilon = u_0$
 \end{frame}
 
-\begin{frame}[t]{Model}
 
-\end{frame}
 
 \begin{frame}[t]{Weak Form}
 
