@@ -24,7 +24,7 @@ def solve_poisson_eps(h, eps, plot=False):
     u_exact = fe.Expression(
         "(1./2 - x[0]) * (2 * x[0] + eps/(2*pi) * sin(2*pi*x[0]/eps)) "
         "+ eps*eps/(2*pi*2*pi) * (1 - cos(2*pi*x[0]/eps)) + x[0]*x[0]",
-        eps=eps, degree=2)
+        eps=eps, degree=4)
 
     def boundary(x, on_boundary):
         return on_boundary
@@ -71,15 +71,21 @@ if __name__ == "__main__":
     conv_rates = errors[:-1, :] / errors[1:, :]
     # Logplot of errors as function of grid size
     plt.semilogy(errors)
-    plt.xlabel('h')
+    plt.xlabel('nc')
+    plt.ylabel('error')
+    clist = [2**i for i in range(3,11)]
+    plt.xticks(np.arange(len(h_list)), clist)#, rotation='vertical')
     plt.legend(['eps = %.2e' % eps for eps in eps_list], loc='best')
     plt.title("Logplot of errors for different epsilon")
+    
     # Plot of convergence rates as function of grid size
     plt.figure()
     plt.plot(conv_rates)
-    plt.xlabel('h')
-    plt.title("plot of convergence rates for different epsilon")
+    plt.xlabel('nc')
+    plt.ylabel('error')
+    plt.title("Plot of convergence rates for different epsilon")
     plt.legend(['eps = %.2e' % eps for eps in eps_list], loc='best')
+    plt.xticks(np.arange(len(h_list)), clist[0:-1], rotation='vertical')
     plt.show()
 
     # Make a plot that shows the order of convergence as a function of eps/h?
