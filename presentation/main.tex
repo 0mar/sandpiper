@@ -19,17 +19,27 @@
 
 \begin{document}
   \frame{\titlepage}
-\begin{frame}{Introduction}
-  Homogenization:
-  \begin{itemize}
-    \item Composite Material
-    \item Highly varying conductivity/diffusion
-    \item microscropic structures
-  \end{itemize}
+\begin{frame}{Homogenisation}
+    \begin{columns}
+        \begin{column}[c]{.5\textwidth}
+            Simulation of flow through nonhomogeneous (material)
+            \begin{itemize}
+              \item Conduction through composite materials
+              \item Ground water flow
+            \end{itemize}
+        \end{column}
+        \begin{column}[c]{.5\textwidth}
+            .
+        \end{column}
+    \end{columns}
 \end{frame}
 
 \begin{frame}[t]{Project aim}
-    Use FeNiCS to approximate automated homogenized solutions
+    \begin{itemize}
+        \item Get aquainted with homogenization theory
+        \item Implement automated upscaled solution solving in Fenics
+        \item Experiment with different solvers and preconditioners
+    \end{itemize}
 \end{frame}
 
 \begin{frame}[t]{Model}
@@ -47,7 +57,7 @@
 
 \begin{frame}[t]{Upscaling}
     Scale separation: \begin{itemize}
-        \item macroscopic $ x$, microscopic $y:= x/\varepsilon$.
+        \item Macroscopic $x$, microscopic $y:= x/\varepsilon$.
         \item Ansatz: power expansion: $u_\varepsilon(x,y) = \sum_i \varepsilon^i u_i(x,y)$
         \item $\nabla u_i(x) = \varepsilon^{-1}\nabla_yu_i + \nabla_xu_i(x,y)$
     \end{itemize}
@@ -55,14 +65,22 @@
     then we obtain $\lim_{\varepsilon\to 0} u_\varepsilon = u_0$
 \end{frame}
 
-
-
 \begin{frame}[t]{Weak Form}
-
+    For all $\phi \in H^1_0(Y)$
+    \begin{equation}
+        A(y)\nabla w_i \nabla \phi = \div{(A(y)e_i)}\phi
+        \label{eq:weak_cell_problem}
+    \end{equation}
 \end{frame}
 
-\begin{frame}[t]{Exact solution}
-
+\begin{frame}[t]{Exact solution (1D)}
+    Let \begin{itemize}
+        \item $\Omega = [0,1]$
+        \item $f(x) = 1$
+        \item $A_\varepsilon(x) = \left( 2+\cos\left(\frac{2\pi x}{\epsilon}\right) \right)^{-1}$
+    \end{itemize}
+    then $u_\varepsilon(x)$ is a (strong) solution:
+    \[ u(x) = \left( \frac{1}{2} - x \right) \left(2x + \frac{\epsilon}{2\pi}\sin\left(\frac{2\pi x}{\epsilon}\right) \right) + \frac{\epsilon^2}{(2\pi)^2}\left( 1 - \cos \left( \frac{2\pi x}{\epsilon} \right) \right) + x^2 \]
 \end{frame}
 
 \begin{frame}[t]{Numerical/Upscaled solution}
@@ -85,8 +103,8 @@
        \item Remaining error:
       \begin{itemize}
         \item Model, $\epsilon > 0$
-        \item Finite solution of the global problem, $\h_{global} > 0$
-        \item Convergence in both  $\epsilon$ and $h_{global}$.
+        \item Finite solution of the global problem, $h_{global} > 0$
+        \item Convergence in both $\epsilon$ and $h_{global}$.
        \end{itemize}
       \end{itemize}
     \end{column}
