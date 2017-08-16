@@ -19,7 +19,7 @@
 
 \begin{document}
   \frame{\titlepage}
-\begin{frame}{Homogenisation}
+\begin{frame}{Homogenization}
     \begin{columns}
         \begin{column}[c]{.5\textwidth}
             Simulation of flow through nonhomogeneous media
@@ -37,8 +37,8 @@
 
 \begin{frame}[c]{Project aim}
     \begin{itemize}
-        \item Implement automated upscaled solution solving in Fenics
-        \item Obtain convergence rates w.r.t. mesh size and microstructure size
+        \item Implement automated homogenized solution process in FeNiCS
+        \item Find convergence rates w.r.t. mesh size $h$ and microstructure size $\epsilon$
         \item Experiment with different solvers and preconditioners
     \end{itemize}
 \end{frame}
@@ -52,7 +52,7 @@
         \end{split}
         \label{eq:model}
     \end{equation}
-     $A_\varepsilon(x)$ periodic with period $\varepsilon$.
+     $A_\varepsilon(x)$ periodic with period $\varepsilon$
      \begin{columns}
          \begin{column}[c]{.5\textwidth}
              \emph{i.e.}
@@ -73,7 +73,7 @@
 \begin{frame}[t]{Upscaling}
     Two-scale separation: \begin{itemize}
         \item Macroscopic $x \in \Omega$, microscopic $y \in Y$.
-        \[u_\varepsilon(x) = u(x,x/\varepsilon) = u(x,y)\]
+        \[u_\varepsilon(x) = u(x,\frac{x}{\varepsilon}) = u(x,y)\]
         \item Ansatz: power expansion:
         \begin{equation*}
             u_\varepsilon(x,y) = \sum_i \varepsilon^i u_i(x,y)
@@ -81,7 +81,7 @@
         \end{equation*}
         %\item $\nabla u_i(x) = \varepsilon^{-1}\nabla_yu_i + \nabla_xu_i(x,y)$
     \end{itemize}
-    then \emph{homogenized} solution $\lim_{\varepsilon\to 0} u_\varepsilon$ is obtained by solving for $u_0$.
+    The \emph{homogenized} solution $\lim_{\varepsilon\to 0} u_\varepsilon$ is obtained by solving for $u_0$.
 \end{frame}
 
 % \begin{frame}[c]{Weak Form}
@@ -93,8 +93,8 @@
 %     for all $\phi \in H^1_0(\Omega)$.
 % \end{frame}
 
-\begin{frame}[t]{Exact solution}
-  Synthetic version of Eq. \eqref{eq:model}:
+\begin{frame}[t]{1D: Exact solution}
+  Synthetic version of \eqref{eq:model}:
   \begin{equation}
     \left( \frac{u'(x)}{2+\cos \left( \frac{2\pi x}{\epsilon} \right)} \right)' = 1
     \label{eq:one_dim}
@@ -113,7 +113,7 @@
 \end{figure}
 \end{frame}
 
-\begin{frame}[t]{Standard approximation}
+\begin{frame}[t]{1D: Standard approximation}
 \begin{columns}
     \begin{column}[c]{.5\textwidth}
       \begin{itemize}
