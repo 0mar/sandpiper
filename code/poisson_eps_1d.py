@@ -68,7 +68,7 @@ if __name__ == "__main__":
         for eps_step, eps in enumerate(eps_list):
             err = solve_poisson_eps(h, eps, plot=False)
             errors[h_step, eps_step] = err
-    conv_rates = errors[:-1, :] / errors[1:, :]
+    conv_rates = errors[:-1, :] / errors[1:, :]/2
     # Logplot of errors as function of grid size
     plt.semilogy(errors)
     plt.xlabel('nc')
@@ -82,10 +82,10 @@ if __name__ == "__main__":
     plt.figure()
     plt.plot(conv_rates)
     plt.xlabel('nc')
-    plt.ylabel('error')
+    plt.ylabel('rate')
     plt.title("Plot of convergence rates for different epsilon")
     plt.legend(['eps = %.2e' % eps for eps in eps_list], loc='best')
-    plt.xticks(np.arange(len(h_list)), clist[0:-1], rotation='vertical')
+    plt.xticks(np.arange(len(h_list)), clist[0:-1])
     plt.show()
 
     # Make a plot that shows the order of convergence as a function of eps/h?
