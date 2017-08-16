@@ -3,7 +3,7 @@
 \renewcommand\L{\mathcal{ L}}
 \renewcommand{\epsilon}{\varepsilon}
 \renewcommand{\div}[1]{\operatorname{div}\left( #1 \right)}
-
+\usepackage{multimedia}
 \usetheme{Warsaw}
 \usecolortheme{beaver}
 \title[Numerical homogenization]{Numerical Homogenization in Fenics}
@@ -22,10 +22,11 @@
 \begin{frame}{Homogenisation}
     \begin{columns}
         \begin{column}[c]{.5\textwidth}
-            Simulation of flow through nonhomogeneous (material)
+            Simulation of flow through nonhomogeneous media
             \begin{itemize}
               \item Conduction through composite materials
               \item Ground water flow
+              \item Corrosion of concrete
             \end{itemize}
         \end{column}
         \begin{column}[c]{.5\textwidth}
@@ -34,10 +35,10 @@
     \end{columns}
 \end{frame}
 
-\begin{frame}[t]{Project aim}
+\begin{frame}[c]{Project aim}
     \begin{itemize}
-        \item Get aquainted with homogenization theory
         \item Implement automated upscaled solution solving in Fenics
+        \item Obtain convergence rates w.r.t. mesh size and microstructure size
         \item Experiment with different solvers and preconditioners
     \end{itemize}
 \end{frame}
@@ -54,6 +55,7 @@
      $A_\varepsilon(x)$ periodic with period $\varepsilon$.
      \begin{columns}
          \begin{column}[c]{.5\textwidth}
+             \emph{i.e.}
              \[A_\varepsilon(x)= \frac{1}{2+\cos \left( \frac{2\pi x}{\epsilon} \right)}\]
          \end{column}
          \begin{column}[c]{.5\textwidth}
@@ -69,24 +71,27 @@
 \end{frame}
 
 \begin{frame}[t]{Upscaling}
-    Scale separation: \begin{itemize}
+    Two-scale separation: \begin{itemize}
         \item Macroscopic $x \in \Omega$, microscopic $y \in Y$.
-        \[y= x/\varepsilon\]
+        \[u_\varepsilon(x) = u(x,x/\varepsilon) = u(x,y)\]
         \item Ansatz: power expansion:
-        \[u_\varepsilon(x,y) = \sum_i \varepsilon^i u_i(x,y)\]
+        \begin{equation*}
+            u_\varepsilon(x,y) = \sum_i \varepsilon^i u_i(x,y)
+            \label{eq:pow_exp}
+        \end{equation*}
         %\item $\nabla u_i(x) = \varepsilon^{-1}\nabla_yu_i + \nabla_xu_i(x,y)$
     \end{itemize}
-    then we obtain \emph{upscaled} solution $u_0$ by
-    \[\lim_{\varepsilon\to 0} u_\varepsilon = u_0\]
+    then \emph{homogenized} solution $\lim_{\varepsilon\to 0} u_\varepsilon$ is obtained by solving for $u_0$.
 \end{frame}
 
-\begin{frame}[t]{Weak Form}
-    For all $\phi \in H^1_0(\Omega)$, find $u \in H^1_0(\Omega)$ s.t.
-    \begin{equation}
-        \int_\Omega A_\epsilon\nabla u\nabla\phi dx= \int_\Omega f\phi dx
-        \label{eq:weak_form}
-    \end{equation}
-\end{frame}
+% \begin{frame}[c]{Weak Form}
+%     Find $u \in H^1_0(\Omega)$ s.t.
+%     \begin{equation}
+%         \int_\Omega A_\epsilon\nabla u\nabla\phi dx= \int_\Omega f\phi dx
+%         \label{eq:weak_form}
+%     \end{equation}
+%     for all $\phi \in H^1_0(\Omega)$.
+% \end{frame}
 
 \begin{frame}[t]{Exact solution}
   Synthetic version of Eq. \eqref{eq:model}:
@@ -108,34 +113,12 @@
 \end{figure}
 \end{frame}
 
-\begin{frame}[t]{Numerical/Upscaled solution}
-\begin{columns}
-    \begin{column}[c]{.5\textwidth}
-      \begin{itemize}
-      \item Solve the cell problem with $A_{\epsilon}=\frac{1}{2+ \left( \frac{2\pi x}{\epsilon} \right)} = \frac{1}{2+ \left( 2\pi y \right)}$
-      \item Then use the obtained $A_{*}$ to compute homogenized solution.
-    \end{itemize}
-  \end{column}
-  \begin{column}[c]{.5\textwidth}
-
-    \includegraphics[width=0.85\linewidth]{one_dim_approx.png}
- \end{column}
-\end{columns}
-\begin{figure}[ht]
-    \centering
-
-    \caption{Result of FeNiCS simulation of \eqref{eq:one_dim} for $\epsilon=0.1$ and $h = 1/80$}
-    \label{fig:one_dim_approx}
-\end{figure}
-
-\end{frame}
-
-\begin{frame}[t]{Convergence rates}
+\begin{frame}[t]{Standard approximation}
 \begin{columns}
     \begin{column}[c]{.5\textwidth}
       \begin{itemize}
       \item Now investigate the convergence for decreasing $\epsilon$ by comparing to the exact solution.
-      \item Fourth order convergence once *****.
+      \item Fourth order convergence provided $h$ resolves $\epsilon$
     \end{itemize}
   \end{column}
   \begin{column}[c]{.5\textwidth}
@@ -147,15 +130,37 @@
 \end{columns}
 \end{frame}
 
-\begin{frame}[t]{2D approximation}
+
+\begin{frame}[t]{2D upscaling}
+\begin{columns}
+    \begin{column}[t]{.5\textwidth}
+      \begin{itemize}
+          \item Two-dimensional example
+           \[A_\epsilon(x) =  \left( 2+\cos\left(\frac{2\pi(x+2y)}{\epsilon}\right) \right)^{-1}\]
+           Cell problem: for each unit vector $e_i$, find $w_i$ satisfying
+           \[-\div{A(y)e_i} + \nabla_y w_i(y)) = 0\]
+           \item Compute homogenized diffusion matrix $A^*_{ij}$ by
+           \[A^*_{ij} = \int_Y(e_j + \nabla_y w_j)\cdot(e_i + \nabla_y w_i)dy\]
+    \end{itemize}
+  \end{column}
+  \begin{column}[t]{.5\textwidth}
+      \begin{figure}[th]
+         \centering
+         \includegraphics[width=0.85\linewidth]{two_dim_diff.png}
+         \caption{Result of FeNiCS simulation of \eqref{eq:one_dim} for $\epsilon=0.1$ and $h = 1/80$}
+         \label{fig:one_dim_approx}
+     \end{figure}
+ \end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}[t]{2D upscaling: FeNiCS}
   \begin{columns}
     \begin{column}[c]{.6\textwidth}
       \begin{itemize}
-        \item
-        %\begin{equation}
-         $ A_\epsilon(x) =  \left( 2+\cos\left(\frac{2\pi(x+2y)}{\epsilon}\right) \right)^{-1}$
         %\end{equation}
-       \item Solve cell problem with relatively high resolution.
+       \item High resolution for cell problem
        \item Remaining error:
       \begin{itemize}
         \item Model, $\epsilon > 0$
