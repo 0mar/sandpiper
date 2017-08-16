@@ -62,15 +62,62 @@
 \end{frame}
 
 \begin{frame}[t]{Exact solution}
+  Synthetic version of Eq. \eqref{eq:model}:
+  \begin{equation}
+    \left( \frac{u'(x)}{2+\cos \left( \frac{2\pi x}{\epsilon} \right)} \right)' = 1
+    \label{eq:one_dim}
+  \end{equation}
 
+  Allows for exact solution:
+  \begin{equation}
+    u(x) = \left( \frac{1}{2} - x \right) \left(2x + \frac{\epsilon}{2\pi}\sin\left(\frac{2\pi x}{\epsilon}\right) \right) + \frac{\epsilon^{2}}{(2\pi)^{2}}\left( 1 - \cos \left( \frac{2 \pi x}{\epsilon} \right) \right) + x^{2}
+   \label{eq:one_dim_sol}
+ \end{equation}
+ \begin{figure}[th]
+    \centering
+    \includegraphics[width=0.35\linewidth]{one_dim_exact.png}
+    \caption{Plot of the exact solution to \eqref{eq:one_dim} for $\epsilon=0.1 $.}
+    \label{fig:one_dim_exact}
+\end{figure}
 \end{frame}
 
 \begin{frame}[t]{Numerical/Upscaled solution}
+\begin{columns}
+    \begin{column}[c]{.5\textwidth}
+      \begin{itemize}
+      \item Solve the cell problem with $A_{\epsilon}=\frac{1}{2+ \left( \frac{2\pi x}{\epsilon} \right)} = \frac{1}{2+ \left( 2\pi y \right)}$
+      \item Then use the obtained $A_{*}$ to compute homogenized solution.
+    \end{itemize}
+  \end{column}
+  \begin{column}[c]{.5\textwidth}
+
+    \includegraphics[width=0.85\linewidth]{one_dim_approx.png}
+ \end{column}
+\end{columns}  
+\begin{figure}[ht]
+    \centering
+    
+    \caption{Result of FeNiCS simulation of \eqref{eq:one_dim} for $\epsilon=0.1$ and $h = 1/80$}
+    \label{fig:one_dim_approx}
+\end{figure}
 
 \end{frame}
 
 \begin{frame}[t]{Convergence rates}
+\begin{columns}
+    \begin{column}[c]{.5\textwidth}
+      \begin{itemize}
+      \item Now investigate the convergence for decreasing $\epsilon$ by comparing to the exact solution.
+      \item Fourth order convergence once *****.
+    \end{itemize}
+  \end{column}
+  \begin{column}[c]{.5\textwidth}
 
+    \includegraphics[width=0.85\linewidth]{one_dim_h_eps1.png}
+    
+    \includegraphics[width=0.85\linewidth]{one_dim_h_eps2.png}
+ \end{column}
+\end{columns}  
 \end{frame}
 
 \begin{frame}[t]{2D approximation}
@@ -85,22 +132,23 @@
        \item Remaining error:
       \begin{itemize}
         \item Model, $\epsilon > 0$
-        \item Finite solution of the global problem, $\h_{global} > 0$
+        \item Finite resolution in the solution of the global problem, $ h_{global} > 0$
         \item Convergence in both  $\epsilon$ and $h_{global}$.
        \end{itemize}
       \end{itemize}
     \end{column}
-    \begin{column}[c]{.4\textwidth}
+    \begin{column}[c]{.5\textwidth}
       \includegraphics[width=0.9\linewidth]{2d_global_errors.png}      % \includegraphics[width=0.65\linewidth]{2d_cell_errors.png}
     \end{column}
   \end{columns}
-
 \end{frame}
 
 \begin{frame}[t]{Solvers \& preconditioners}
   \begin{columns}
     \begin{column}[c]{.5\textwidth}
       \begin{itemize}
+      \item Comparison of a selection of the solvers and preconditioners available in FEniCS.
+      \item $~2.5\cdot10^{5}$ cells, both full and homogenized problem.
       \item Incomplete LU and Conjugate Gradient good for symmetric problems.
       \item GMRES expensive, convergence not granted for increased number of cells.
     \end{itemize}
