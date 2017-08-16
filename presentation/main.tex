@@ -43,33 +43,48 @@
 \end{frame}
 
 \begin{frame}[t]{Model}
-    Let $\varepsilon>0$. Find $u(x)$ s.t.
+    Let $\varepsilon>0$. Find $u_\varepsilon(x)$ satisfying
     \begin{equation}
         \begin{split}
-            -\div{A_\varepsilon(x)\nabla u(x))} &= f(x) \mbox{ for } x \in \Omega,\\
+            -\div{A_\varepsilon(x)\nabla u_\varepsilon(x))} &= f(x) \mbox{ for } x \in \Omega,\\
             u_\varepsilon(x) &= 0 \mbox{ for } x \in \partial\Omega.
         \end{split}
         \label{eq:model}
     \end{equation}
-     $A_\varepsilon(x)$ has period $\varepsilon$.
+     $A_\varepsilon(x)$ periodic with period $\varepsilon$.
+     \begin{columns}
+         \begin{column}[c]{.5\textwidth}
+             \[A_\varepsilon(x)= \frac{1}{2+\cos \left( \frac{2\pi x}{\epsilon} \right)}\]
+         \end{column}
+         \begin{column}[c]{.5\textwidth}
+             \begin{figure}[th]
+                \centering
+                \includegraphics[width=0.9\linewidth]{a_eps.png}
+                \caption{Plot of $A_\epsilon$ for $\epsilon=0.05$.}
+                \label{fig:one_dim_exact}
+            \end{figure}
+         \end{column}
+     \end{columns}
 
 \end{frame}
 
 \begin{frame}[t]{Upscaling}
     Scale separation: \begin{itemize}
-        \item Macroscopic $x$, microscopic $y:= x/\varepsilon$.
-        \item Ansatz: power expansion: $u_\varepsilon(x,y) = \sum_i \varepsilon^i u_i(x,y)$
-        \item $\nabla u_i(x) = \varepsilon^{-1}\nabla_yu_i + \nabla_xu_i(x,y)$
+        \item Macroscopic $x \in \Omega$, microscopic $y \in Y$.
+        \[y= x/\varepsilon\]
+        \item Ansatz: power expansion:
+        \[u_\varepsilon(x,y) = \sum_i \varepsilon^i u_i(x,y)\]
+        %\item $\nabla u_i(x) = \varepsilon^{-1}\nabla_yu_i + \nabla_xu_i(x,y)$
     \end{itemize}
-    .\\
-    then we obtain $\lim_{\varepsilon\to 0} u_\varepsilon = u_0$
+    then we obtain \emph{upscaled} solution $u_0$ by
+    \[\lim_{\varepsilon\to 0} u_\varepsilon = u_0\]
 \end{frame}
 
 \begin{frame}[t]{Weak Form}
-    For all $\phi \in H^1_0(Y)$
+    For all $\phi \in H^1_0(\Omega)$, find $u \in H^1_0(\Omega)$ s.t.
     \begin{equation}
-        A(y)\nabla w_i \nabla \phi = \div{(A(y)e_i)}\phi
-        \label{eq:weak_cell_problem}
+        \int_\Omega A_\epsilon\nabla u\nabla\phi dx= \int_\Omega f\phi dx
+        \label{eq:weak_form}
     \end{equation}
 \end{frame}
 
