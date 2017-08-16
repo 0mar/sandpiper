@@ -2,15 +2,16 @@ import tkinter
 import numpy as np
 
 window = tkinter.Tk()
-size = 700
+a = 1.8
+size = a*700
 window.geometry("%dx%d" % (size,size))
 canvas = tkinter.Canvas(window,width=size,height=size)
 canvas.pack(fill=tkinter.BOTH, expand=1)
 
-min_radius = 20
-max_radius = 30
+min_radius = a*20
+max_radius = a*30
 n = 3
-tag = [0]
+tag = [1]
 def add_circle(event):
     if tag[0] % 2== 1:
         n = 20

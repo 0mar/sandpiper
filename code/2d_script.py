@@ -48,7 +48,7 @@ class PoissonSolver:
                 self.mesh = fe.UnitCubeMesh(self.n, self.n, self.n)
             else:
                 self.mesh = mesh
-            a_eps = '({}*x[0]*x[0]+1)/(2+cos(2*pi*(x[0]+2*x[1]+x[2])/eps))'.format(time)#(x[1]*x[1]+x[2]*x[2]+{}*x[0]*x[0])
+            a_eps = '(sin(2*pi*{})*x[0]*x[0]+1.2)/(2+cos(2*pi*(x[0]+2*x[1]+x[2])/eps))'.format(time)#(x[1]*x[1]+x[2]*x[2]+{}*x[0]*x[0])
             print(a_eps, self.eps)
             self.e_is = [fe.Constant((1., 0., 0.)), fe.Constant((0., 1., 0.)), fe.Constant((0., 0., 1.))]
             self.diff_coef = fe.Expression(a_eps, eps=self.eps, degree=2, domain=self.mesh)
@@ -523,10 +523,10 @@ def stored_solutions():
 
 if __name__ == "__main__":
     # The script may be used for three different purposes 
-    solver_comparison = True#False
+    solver_comparison = False
     cell_and_global = False
     geometry = False
-    show_off = False#True
+    show_off = True
     if solver_comparison:
         n_h = 1
         n_e = 1
@@ -628,7 +628,7 @@ if __name__ == "__main__":
     if show_off:
         # Set parameters
         dim = 3
-        mesh_size = 35
+        mesh_size = 25#35
         h_cell = 1e-1
         epsilon = 1/2**0
         file_name= 'results/3d_solution.pvd'
@@ -641,8 +641,9 @@ if __name__ == "__main__":
         #plot(s_global, mesh=self.mesh)
         #plot.show()
         # Loop in time
-        n_t=5
-        timesteps = range(n_t)
+        n_t=20
+        
+        timesteps = np.linspace(0,3,n_t)
         for t_step, t in enumerate(timesteps):
             print('Solve at t = ', t)
             evaluate_timestep(s_global, t, h_cell)
